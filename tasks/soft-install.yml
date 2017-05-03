@@ -1,0 +1,53 @@
+---
+
+- copy: src={{ src_package_path }}/{{ item }} dest=/var/cache/apt/archives//
+  with_items:
+    - ca-certificates-java_20161107_all.deb
+    - java-common_0.58_all.deb
+    - libatk-wrapper-java_0.30.4-3_all.deb
+    - libatk-wrapper-java-jni_0.30.4-3_amd64.deb
+    - openjdk-7-jdk_7u101-2.6.6-2~deb8u1_amd64.deb
+    - openjdk-7-jre_7u101-2.6.6-2~deb8u1_amd64.deb
+    - openjdk-7-jre-headless_7u101-2.6.6-2~deb8u1_amd64.deb
+    - tzdata-java_2014j-0wheezy1astra.se1_all.deb
+  sudo: yes
+
+- name: Install the package "openjdk-7-jdk"
+  apt:
+    name: openjdk-7-jdk
+    state: present
+
+- name: Remove temp folder
+  file: 
+    path: "{{ temp_folder }}"
+    state: absent
+    
+- name: Create temp folder
+  file: 
+    path: "{{ temp_folder }}"
+    state: directory
+
+- name: Unzip package in temp folder
+  unarchive:
+    src: "{{ src_package_path + artifact}}"
+    dest: "{{ temp_folder}}"
+  when: not_installed
+
+- name: Get package original foldername
+  shell: "ls -d {{temp_folder}}/*"
+  register: dir_name
+  when: not_installed
+ 
+- name: Rename package folder
+  shell: "mv {{dir_name.stdout_lines | first}} {{target_package_folder}}"
+  when: not_installed
+
+- name: Set facts to installed
+  set_fact: 
+    not_installed: false
+    installed: true
+
+- name: Remove temp folder
+  file: 
+    path: "{{ temp_folder }}"
+    state: absent

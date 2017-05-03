@@ -1,0 +1,16 @@
+[fuse]
+fuse-a-active ansible_host=192.168.13.13 ansible_connection=ssh ansible_user=user ansible_ssh_pass=P@ssw0rd
+fuse-b-active ansible_host=192.168.13.10 ansible_connection=ssh ansible_user=user ansible_ssh_pass=P@ssw0rd
+
+[amq]
+amq-a-master ansible_host=192.168.13.11 ansible_connection=ssh ansible_user=user ansible_ssh_pass=P@ssw0rd
+amq-a-slave ansible_host=192.168.13.17 ansible_connection=ssh ansible_user=user ansible_ssh_pass=P@ssw0rd
+amq-b-master ansible_host=192.168.13.11 ansible_connection=ssh ansible_user=user ansible_ssh_pass=P@ssw0rd
+amq-b-slave ansible_host=192.168.13.17 ansible_connection=ssh ansible_user=user ansible_ssh_pass=P@ssw0rd
+
+
+#192.168.13.10  fusenode02
+#192.168.13.11  fusenode03
+#192.168.13.13  fusenode01
+#192.168.13.15  fusenode05
+#192.168.13.17  fusenode04
