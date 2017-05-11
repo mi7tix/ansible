@@ -113,3 +113,10 @@
   when: setup_amq_network
 
 
+- name: Setup update cluster clients stomp
+  lineinfile:
+    dest: "{{target_package_folder}}/etc/activemq.xml"
+    regexp: "^(.*)<transportConnectors.*>(.*)$"
+    insertafter: "^(.*)<transportConnector.*name=\"openwire\".*>(.*)$"
+    line: "<transportConnector name=\"stomp\" uri=\"stomp://0.0.0.0:61613\"/>"
+  when: setup_amq_network

@@ -1,21 +1,108 @@
 ---
 
-- copy: src={{ src_package_path }}/{{ item }} dest=/var/cache/apt/archives//
-  with_items:
-    - ca-certificates-java_20161107_all.deb
-    - java-common_0.58_all.deb
-    - libatk-wrapper-java_0.30.4-3_all.deb
-    - libatk-wrapper-java-jni_0.30.4-3_amd64.deb
-    - openjdk-7-jdk_7u101-2.6.6-2~deb8u1_amd64.deb
-    - openjdk-7-jre_7u101-2.6.6-2~deb8u1_amd64.deb
-    - openjdk-7-jre-headless_7u101-2.6.6-2~deb8u1_amd64.deb
-    - tzdata-java_2014j-0wheezy1astra.se1_all.deb
+#- copy: src={{ src_package_path }}/{{ item }} dest=/var/cache/apt/archives//
+#  with_items:
+#    - ca-certificates-java_20161107_all.deb
+#    - java-common_0.58_all.deb
+#    - libatk-wrapper-java_0.30.4-3_all.deb
+#    - libatk-wrapper-java-jni_0.30.4-3_amd64.deb
+#    - libgconf2-4_3.2.5-1+build1_amd64.deb
+#    - libgif4_4.1.6-10_amd64.deb
+#    - libgnome2-0_2.32.1-3_amd64.deb
+#   - libgnomevfs2-0_2.24.4-2_amd64.deb
+#    - libnss3_3.14.5-1+deb7u5_amd64.deb
+#    - libpulse0_2.0-6.1_amd64.deb
+#    - libsctp1_1.0.11+dfsg-2_amd64.deb
+#    - libxtst6_1.2.1-1+deb7u1_amd64.deb
+#    - openjdk-7-jdk_7u101-2.6.6-2~deb8u1_amd64.deb
+#   - openjdk-7-jre_7u101-2.6.6-2~deb8u1_amd64.deb
+#    - openjdk-7-jre-headless_7u101-2.6.6-2~deb8u1_amd64.deb
+#    - ttf-dejavu-extra_2.34-1_all.deb
+#    - tzdata-java_2014j-0wheezy1astra.se1_all.deb
+#    - gvfs_1.12.3-4astra1_amd64.deb
+#    - gvfs-common_1.12.3-4astra1_all.deb
+#    - gvfs-daemons_1.12.3-4astra1_amd64.deb
+#    - gvfs-libs_1.12.3-4astra1_amd64.deb
+
+#  sudo: yes
+
+- name: Add file lab50.list
+  file:
+    path: /etc/apt/sources.list.d/lab50.list
+    owner: root
+    group: root
+    mode: 0644
+    state: touch
   sudo: yes
 
-- name: Install the package "openjdk-7-jdk"
-  apt:
-    name: openjdk-7-jdk
+- name: Add file security.list
+  file:
+    path: /etc/apt/sources.list.d/security.list
+    owner: root
+    group: root
+    mode: 0644
+    state: touch
+  sudo: yes
+
+- name: add line repo lab50.list packages update
+  lineinfile:
+    path: /etc/apt/sources.list.d/lab50.list
     state: present
+    insertbefore: BOF
+    line: 'deb http://packages.lab50.net/security/ se15/updates main contrib non-free'
+  sudo: yes
+
+
+- name: add line repo lab50.list packages
+  lineinfile:     
+    path: /etc/apt/sources.list.d/lab50.list
+    state: present
+    insertbefore: BOF
+    line: 'deb-src http://packages.lab50.net/se15/ smolensk main'
+  sudo: yes
+    
+
+- name: Install the package
+  action: >
+    {{ ansible_pkg_mgr }} name={{ item }} state=present update_cache=yes
+  with_items:    
+    - openjdk-7-jdk
+    - zabbix-agent
+  sudo: yes
+    #    dpkg_options: '-o dir::cache::archives="var/cache/apt/archives/"'
+
+
+- name: Settings zabbix Server
+  replace:
+    dest: /etc/zabbix/zabbix_agentd.conf
+    regexp: '^Server=127.0.0.1'
+    replace: 'Server=192.168.13.173'
+    backup: yes
+    #  when: Install the package
+  sudo: yes
+
+- name: Settings zabbix ServerAction
+  replace:
+    dest: /etc/zabbix/zabbix_agentd.conf
+    regexp: '^ServerActive=.*'
+    replace: 'ServerActive=192.168.13.173,127.0.0.1'
+    backup: yes
+    #  when: Install the package
+  sudo: yes
+
+- name: Settings zabbix Hostname
+  replace:
+    dest: /etc/zabbix/zabbix_agentd.conf
+    regexp: '^Hostname=.*'
+    replace: "Hostname={{ ansible_hostname }}"
+    backup: yes
+    #  when: Install the package
+  sudo: yes
+
+- name: 'Restart zabbiz_agent'
+  service: 
+    name: zabbix-agent 
+    state: restarted
 
 - name: Remove temp folder
   file: 
